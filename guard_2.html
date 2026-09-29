@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%9B%A1%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>*{box-sizing:border-box}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Turnover Guard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#eef2f3; --surface:#ffffff; --surface-2:#f6f9f9; --sunk:#e4eaec;
+    --line:#d3dcde; --line-soft:#e3eaeb;
+    --ink:#101a1c; --ink-2:#41575b; --ink-3:#71888c;
+    --accent:#0d6b6b; --accent-ink:#ffffff; --accent-soft:#d5e9e7; --accent-line:#8cc4bf;
+    --warn:#8a5806; --warn-soft:#fbeccc; --warn-line:#e0b45f;
+    --crit:#96271f; --crit-soft:#fadcd8; --crit-line:#e09a91;
+    --booked:#9db0b3; --booked-soft:#cfd9da;
+    --radius:7px; --radius-sm:4px;
+    --shadow:0 1px 2px rgba(16,26,28,.06), 0 4px 14px rgba(16,26,28,.05);
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --disp:"Archivo","IBM Plex Sans",-apple-system,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1213; --surface:#151d1f; --surface-2:#1b2426; --sunk:#0a0f10;
+      --line:#2b383b; --line-soft:#222d2f;
+      --ink:#e8f0f0; --ink-2:#a3b6b8; --ink-3:#71888c;
+      --accent:#43b5ab; --accent-ink:#08201f; --accent-soft:#173230; --accent-line:#2c5f5a;
+      --warn:#e0ab55; --warn-soft:#33280f; --warn-line:#5e4a1c;
+      --crit:#e79187; --crit-soft:#371a17; --crit-line:#63302a;
+      --booked:#4e6265; --booked-soft:#2a3739;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1213; --surface:#151d1f; --surface-2:#1b2426; --sunk:#0a0f10;
+    --line:#2b383b; --line-soft:#222d2f;
+    --ink:#e8f0f0; --ink-2:#a3b6b8; --ink-3:#71888c;
+    --accent:#43b5ab; --accent-ink:#08201f; --accent-soft:#173230; --accent-line:#2c5f5a;
+    --warn:#e0ab55; --warn-soft:#33280f; --warn-line:#5e4a1c;
+    --crit:#e79187; --crit-soft:#371a17; --crit-line:#63302a;
+    --booked:#4e6265; --booked-soft:#2a3739;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;margin:0}
+  h1,h2,h3{font-family:var(--disp);text-wrap:balance;margin:0}
+  button,input,select,textarea{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  .lbl{font-family:var(--disp);font-size:10.5px;font-weight:600;letter-spacing:.09em;
+       text-transform:uppercase;color:var(--ink-3)}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* ---------- shell ---------- */
+  .topbar{position:sticky;top:0;z-index:20;background:var(--surface);
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;
+    padding:11px 20px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:9px;margin-right:auto}
+  .brand h1{font-size:16px;font-weight:700;letter-spacing:-.015em}
+  .brand span{font-size:11.5px;color:var(--ink-3)}
+
+  .armed{display:flex;align-items:center;gap:8px;padding:5px 11px 5px 9px;border-radius:999px;
+    border:1px solid var(--line);background:var(--surface-2);font-size:12px;font-weight:500}
+  .armed .dot{width:8px;height:8px;border-radius:50%;background:var(--booked);flex:none}
+  .armed.on{border-color:var(--accent-line);background:var(--accent-soft);color:var(--accent)}
+  .armed.on .dot{background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+
+  .tabs{display:flex;gap:2px;background:var(--sunk);padding:3px;border-radius:var(--radius);
+    border:1px solid var(--line-soft)}
+  .tabs button{background:none;border:0;padding:5px 13px;border-radius:var(--radius-sm);
+    font-size:12.5px;font-weight:500;color:var(--ink-2);cursor:pointer}
+  .tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+  main{max-width:1240px;margin:0 auto;padding:20px}
+  .panel{display:none}
+  .panel.show{display:block}
+
+  /* ---------- generic bits ---------- */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+  .card-h h2{font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+  .card-b{padding:16px}
+
+  .btn{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:6px 13px;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:var(--ink-3)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{border-color:transparent;background:none;color:var(--ink-2);padding:5px 8px}
+  .btn.ghost:hover{background:var(--sunk);color:var(--ink)}
+  .btn.danger{color:var(--crit);border-color:var(--crit-line)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;
+    font-size:11px;font-weight:600;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2)}
+  .pill.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+  .pill.warn{background:var(--warn-soft);border-color:var(--warn-line);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);border-color:var(--crit-line);color:var(--crit)}
+
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field input,.field select{background:var(--surface-2);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:6px 9px;font-size:13px;width:100%}
+  .field input[type=number]{font-family:var(--mono)}
+  .hint{font-size:11.5px;color:var(--ink-3);line-height:1.45}
+
+  .grid{display:grid;gap:14px}
+
+  /* ---------- rules ---------- */
+  .rules-layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:16px;align-items:start}
+  @media (max-width:900px){.rules-layout{grid-template-columns:1fr}}
+
+  .rule-item{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line-soft);
+    padding:11px 14px;cursor:pointer;position:relative}
+  .rule-item:last-child{border-bottom:0}
+  .rule-item:hover{background:var(--surface-2)}
+  .rule-item[aria-current="true"]{background:var(--surface-2)}
+  .rule-item[aria-current="true"]::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+  .rule-item .nm{font-weight:600;font-size:13px;display:block;margin-bottom:3px}
+  .rule-item .mt{font-size:11.5px;color:var(--ink-3);display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+
+  .switch{position:relative;width:34px;height:19px;flex:none;border-radius:999px;background:var(--booked-soft);
+    border:1px solid var(--line);cursor:pointer;padding:0;transition:background .15s}
+  .switch::after{content:"";position:absolute;top:1.5px;left:2px;width:13px;height:13px;border-radius:50%;
+    background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .switch[aria-checked="true"]{background:var(--accent);border-color:var(--accent)}
+  .switch[aria-checked="true"]::after{transform:translateX(15px)}
+
+  .dows{display:flex;gap:4px}
+  .dows label{width:31px;height:31px;display:grid;place-items:center;border:1px solid var(--line);
+    border-radius:var(--radius-sm);font-size:11.5px;font-weight:600;cursor:pointer;background:var(--surface-2);color:var(--ink-2)}
+  .dows input{position:absolute;opacity:0;width:0;height:0}
+  .dows input:checked + span{}
+  .dows label:has(input:checked){background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .dows label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+
+  /* ---------- specific dates (holiday rules) ---------- */
+  .dates{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px;min-height:31px;align-items:center}
+  .datechip{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--accent-ink);
+    border-radius:var(--radius-sm);padding:5px 6px 5px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+  .datex{background:none;border:0;color:inherit;opacity:.75;cursor:pointer;font-size:15px;
+    line-height:1;padding:0 3px;border-radius:3px}
+  .datex:hover{opacity:1;background:rgba(0,0,0,.18)}
+  .datex:focus-visible{outline:2px solid var(--accent-ink);outline-offset:1px}
+  .daterow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .daterow input[type=date]{background:var(--surface-2);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:6px 10px;font-size:13px;color:var(--ink);font-family:inherit}
+
+  /* ---------- homes picker ---------- */
+  .homes-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+  .homes-tools input[type=search]{flex:1;min-width:180px;background:var(--surface-2);
+    border:1px solid var(--line);border-radius:var(--radius-sm);padding:6px 10px;font-size:13px}
+  .homes{max-height:330px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--surface-2);display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .home{display:flex;gap:8px;align-items:center;padding:7px 11px;border-bottom:1px solid var(--line-soft);
+    font-size:12.5px;cursor:pointer;min-width:0}
+  .home:hover{background:var(--surface)}
+  .home input{accent-color:var(--accent);flex:none;margin:0}
+  .home .hn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .home .hb{margin-left:auto;font-size:11px;color:var(--ink-3);flex:none;font-family:var(--mono)}
+
+  /* ---------- night strip ---------- */
+  .strip{display:flex;gap:2px;align-items:center}
+  .night{width:15px;height:19px;border-radius:2px;flex:none;position:relative}
+  .night.booked{background:var(--booked-soft);border:1px solid var(--booked)}
+  .night.held{background:var(--accent-soft);border:1px solid var(--accent-line)}
+  .night.held::after{content:"";position:absolute;inset:2px;
+    background:repeating-linear-gradient(45deg,transparent 0 2px,var(--accent) 2px 3px);opacity:.55}
+  .night.gap{width:6px;background:none}
+
+  .prev-row{display:grid;grid-template-columns:minmax(120px,1.4fr) auto minmax(150px,1fr) auto;
+    gap:12px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line-soft)}
+  .prev-row:last-child{border-bottom:0}
+  .prev-row .hn{font-weight:500;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prev-row .dt{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .prev-row .rn{font-size:11.5px;color:var(--ink-3);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @media (max-width:760px){.prev-row{grid-template-columns:1fr auto}.prev-row .rn{display:none}}
+
+  /* ---------- tables ---------- */
+  .tw{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th{text-align:left;font-family:var(--disp);font-size:10.5px;font-weight:600;letter-spacing:.08em;
+     text-transform:uppercase;color:var(--ink-3);padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:9px 12px;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+  tr:last-child td{border-bottom:0}
+  td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tr.is-stale td{background:var(--warn-soft)}
+  tr.is-failed td{background:var(--crit-soft)}
+
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:1px;
+    background:var(--line-soft);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .stat{background:var(--surface);padding:12px 15px}
+  .stat .v{font-family:var(--disp);font-size:23px;font-weight:700;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat .k{margin-top:2px}
+  .stat.warn .v{color:var(--warn)}
+  .stat.crit .v{color:var(--crit)}
+  .stat.good .v{color:var(--accent)}
+
+  .empty{padding:34px 20px;text-align:center;color:var(--ink-3);font-size:13px}
+
+  .note{border-left:3px solid var(--warn-line);background:var(--warn-soft);color:var(--warn);
+    padding:10px 14px;border-radius:var(--radius-sm);font-size:12.5px;line-height:1.5}
+
+  /* ---------- gate ---------- */
+  .gate{max-width:390px;margin:14vh auto;padding:0 20px}
+  .gate .card-b{display:flex;flex-direction:column;gap:13px}
+  .gate p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.55}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;
+    background:var(--ink);color:var(--bg);padding:9px 17px;border-radius:999px;font-size:13px;
+    box-shadow:0 6px 22px rgba(0,0,0,.28);max-width:90vw}
+  .toast.err{background:var(--crit);color:#fff}
+</style>
+
+<div id="gate" class="gate">
+  <div class="card">
+    <div class="card-h"><h2>Turnover Guard</h2></div>
+    <div class="card-b">
+      <p>Enter the admin token to manage buffer rules for the Streamline calendar.</p>
+      <div class="field">
+        <label class="lbl" for="tok">Admin token</label>
+        <input id="tok" type="password" autocomplete="off" spellcheck="false" placeholder="bbz_…">
+      </div>
+      <button class="btn primary" id="gateGo">Unlock</button>
+      <p class="hint" id="gateErr" hidden></p>
+    </div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <div class="topbar">
+    <div class="brand">
+      <h1>Turnover Guard</h1>
+      <span>Streamline buffer rules</span>
+    </div>
+    <div class="armed" id="armed"><span class="dot"></span><span id="armedTxt">checking…</span></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="rules" aria-selected="true">Rules</button>
+      <button role="tab" data-tab="queue" aria-selected="false">Blocks</button>
+      <button role="tab" data-tab="history" aria-selected="false">History</button>
+      <button role="tab" data-tab="runs" aria-selected="false">Activity</button>
+      <button role="tab" data-tab="settings" aria-selected="false">Settings</button>
+    </div>
+    <button class="btn ghost" id="reload" title="Reload from the database">Refresh</button>
+  </div>
+
+  <main>
+    <!-- ================= RULES ================= -->
+    <section class="panel show" id="panel-rules">
+      <div class="rules-layout">
+        <div class="card" style="overflow:hidden">
+          <div class="card-h">
+            <h2>Rule sets</h2>
+            <button class="btn ghost" id="newRule" style="margin-left:auto">+ New</button>
+          </div>
+          <div id="ruleList"></div>
+        </div>
+
+        <div class="grid" id="editorWrap"></div>
+      </div>
+    </section>
+
+    <!-- ================= QUEUE ================= -->
+    <section class="panel" id="panel-queue">
+      <div class="grid">
+        <div class="stat-row" id="queueStats"></div>
+        <div id="staleNote"></div>
+        <div class="card">
+          <div class="card-h">
+            <h2>Blocks</h2>
+            <select id="qFilter" style="margin-left:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:5px 8px;font-size:12.5px">
+              <option value="">All statuses</option>
+              <option value="pending">Queued</option>
+              <option value="pushed">In Streamline</option>
+              <option value="stale">Needs manual removal</option>
+              <option value="failed">Failed</option>
+              <option value="removed">Removed</option>
+            </select>
+          </div>
+          <div class="tw" id="queueTable"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= HISTORY ================= -->
+    <section class="panel" id="panel-history">
+      <div class="grid">
+        <div class="stat-row" id="histStats"></div>
+        <div class="card">
+          <div class="card-h">
+            <h2>Everything the engine has done</h2>
+            <select id="hFilter" style="margin-left:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:5px 8px;font-size:12.5px">
+              <option value="">All events</option>
+              <option value="pushed">Blocks created</option>
+              <option value="queued">Queued</option>
+              <option value="failed">Failures</option>
+              <option value="stale">Flagged for removal</option>
+              <option value="removed">Removed</option>
+              <option value="expired">Expired</option>
+            </select>
+            <input type="search" id="hSearch" placeholder="Filter by home&hellip;"
+                   style="background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:5px 10px;font-size:12.5px;min-width:170px">
+          </div>
+          <div id="histFeed"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= RUNS ================= -->
+    <section class="panel" id="panel-runs">
+      <div class="card">
+        <div class="card-h"><h2>Engine activity</h2></div>
+        <div class="tw" id="runsTable"></div>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section class="panel" id="panel-settings">
+      <div class="grid" style="max-width:620px">
+        <div class="card">
+          <div class="card-h"><h2>Pushing to Streamline</h2></div>
+          <div class="card-b grid">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <button class="switch" id="liveSw" role="switch" aria-checked="false" aria-label="Push blocks to Streamline"></button>
+              <div>
+                <div style="font-weight:600;font-size:13px">Push blocks to Streamline</div>
+                <p class="hint" id="liveHint"></p>
+              </div>
+            </div>
+            <div class="field" style="max-width:200px">
+              <label class="lbl" for="throttle">Max blocks per run</label>
+              <input id="throttle" type="number" min="1" max="500">
+              <span class="hint">A safety ceiling. The engine stops there and picks up the rest next hour.</span>
+            </div>
+            <div class="grid" style="grid-template-columns:1fr 1fr;max-width:400px">
+              <div class="field">
+                <label class="lbl" for="gfn">Block first name</label>
+                <input id="gfn">
+              </div>
+              <div class="field">
+                <label class="lbl" for="gln">Block last name</label>
+                <input id="gln">
+              </div>
+            </div>
+            <span class="hint">Blocks appear in Streamline as Office Blocks (type 6) under this name, so they're easy to spot on the calendar and in reports.</span>
+            <div><button class="btn primary" id="saveCfg">Save settings</button></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h2>How removal works</h2></div>
+          <div class="card-b grid">
+            <p class="hint" style="font-size:12.5px">
+              The Streamline API token can create reservations but has no cancel or modify
+              method enabled. When a booking that caused a block is cancelled or moved, the
+              block is marked <strong>Needs manual removal</strong> on the Blocks tab with its
+              Streamline confirmation number. Delete it there, then mark it removed here.
+            </p>
+            <p class="hint" style="font-size:12.5px">
+              Ask Streamline support to enable a cancel method on the token and this becomes automatic.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const API = 'https://zyyzmkayzadbhazdoghk.supabase.co/functions/v1/block-admin';
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOW1 = ['S','M','T','W','T','F','S'];
+
+let TOKEN = '';
+let S = { rules:[], links:[], properties:[], queue:[], runs:[], config:null };
+let selectedRuleId = null;
+let draftUnits = null;         // Set of unit_ids being edited
+let draftAll = false;          // rule follows every active home
+let previewCache = null;
+
+try { TOKEN = localStorage.getItem('tg_token') || ''; } catch(e) {}
+
+/* ---------------- api ---------------- */
+async function api(payload){
+  const res = await fetch(API, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-admin-token':TOKEN},
+    body: JSON.stringify(payload)
+  });
+  const j = await res.json().catch(()=>({error:'Bad response from server'}));
+  if(!res.ok) throw new Error(j.error || ('Request failed ('+res.status+')'));
+  return j;
+}
+
+let toastTimer;
+function toast(msg, isErr){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const d = document.createElement('div');
+  d.className = 'toast' + (isErr ? ' err' : '');
+  d.textContent = msg;
+  d.setAttribute('role','status');
+  document.body.appendChild(d);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>d.remove(), isErr ? 6000 : 2600);
+}
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => (
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------------- dates ---------------- */
+function d(iso){ // '2026-09-06' -> Date at local noon (no TZ drift)
+  const [y,m,dd] = String(iso).slice(0,10).split('-').map(Number);
+  return new Date(y, m-1, dd, 12);
+}
+function fmt(iso){
+  const t = d(iso);
+  return DOW[t.getDay()] + ' ' + (t.getMonth()+1) + '/' + t.getDate();
+}
+function fmtFull(iso){
+  const t = d(iso);
+  return t.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+}
+function nights(a,b){ return Math.round((d(b)-d(a)) / 86400000); }
+
+/* ---------------- gate ---------------- */
+async function unlock(tok){
+  TOKEN = tok;
+  const st = await api({action:'state'});
+  S = st;
+  try { localStorage.setItem('tg_token', tok); } catch(e) {}
+  document.getElementById('gate').hidden = true;
+  document.getElementById('app').hidden = false;
+  if(!selectedRuleId && S.rules.length) selectedRuleId = S.rules[0].id;
+  renderAll();
+}
+
+document.getElementById('gateGo').onclick = async () => {
+  const err = document.getElementById('gateErr');
+  err.hidden = true;
+  const v = document.getElementById('tok').value.trim();
+  if(!v) return;
+  try { await unlock(v); }
+  catch(e){ err.textContent = e.message === 'unauthorized' ? 'That token was not accepted.' : e.message; err.hidden = false; }
+};
+document.getElementById('tok').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('gateGo').click();
+});
+
+/* ---------------- refresh ---------------- */
+async function refresh(){
+  S = await api({action:'state'});
+  if(!S.rules.some(r=>r.id===selectedRuleId)) selectedRuleId = S.rules[0]?.id ?? null;
+  draftUnits = null; previewCache = null;
+  renderAll();
+}
+document.getElementById('reload').onclick = () =>
+  refresh().then(()=>toast('Reloaded')).catch(e=>toast(e.message,true));
+
+/* ---------------- tabs ---------------- */
+document.querySelectorAll('[role=tab]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[role=tab]').forEach(x => x.setAttribute('aria-selected', String(x===b)));
+  document.querySelectorAll('.panel').forEach(p =>
+    p.classList.toggle('show', p.id === 'panel-' + b.dataset.tab));
+});
+
+/* ---------------- render ---------------- */
+function renderAll(){ renderArmed(); renderRuleList(); renderEditor(); renderQueue(); renderHistory(); renderRuns(); renderSettings(); }
+
+function renderArmed(){
+  const live = !!S.config?.live;
+  const enabled = S.rules.filter(r=>r.enabled).length;
+  const el = document.getElementById('armed');
+  el.classList.toggle('on', live && enabled > 0);
+  document.getElementById('armedTxt').textContent =
+    !live ? 'Not pushing — preview only'
+          : enabled === 0 ? 'Pushing on, no rules enabled'
+          : 'Live · ' + enabled + ' rule' + (enabled>1?'s':'') + ' enabled';
+}
+
+function ruleUnits(id){ return S.links.filter(l => l.rule_set_id === id).map(l => l.unit_id); }
+
+function triggerSummary(r){
+  switch(r.trigger_type){
+    case 'turnover_soon': return 'Turnover within ' + (r.trigger_lead_days ?? 1) + 'd';
+    case 'dow_turnover': return 'No turns ' + (r.trigger_dows||[]).map(i=>DOW[i]).join(', ');
+    case 'arrival_within': return 'Arrives within ' + (r.trigger_lead_days ?? 2) + 'd';
+    case 'last_minute_arrival': return 'Booked ≤' + (r.trigger_lead_days ?? 2) + 'd out';
+    case 'checkin_dow':  return 'Checks in ' + (r.trigger_dows||[]).map(i=>DOW[i]).join(', ');
+    case 'checkout_dow': return 'Checks out ' + (r.trigger_dows||[]).map(i=>DOW[i]).join(', ');
+    case 'short_stay':   return '≤' + (r.trigger_max_nights ?? 2) + ' nights';
+    case 'date_turnover': {
+      const n = (r.trigger_dates || []).length;
+      const next = upcomingDates(r.trigger_dates)[0];
+      return n ? 'No turns on ' + n + ' set date' + (n>1?'s':'') + (next ? ' · next ' + prettyDate(next) : '')
+               : 'No dates set yet';
+    }
+    case 'all': return 'Every booking';
+    default: return 'Unknown trigger (' + esc(r.trigger_type || '—') + ')';
+  }
+}
+
+// Dates on or after today, sorted. Used for the summary and the editor.
+function upcomingDates(list){
+  const today = new Date().toISOString().slice(0,10);
+  return (list || []).filter(d => d >= today).sort();
+}
+function prettyDate(d){
+  const [y,m,day] = String(d).split('-').map(Number);
+  return new Date(Date.UTC(y, m-1, day)).toLocaleDateString(undefined,
+    { month:'short', day:'numeric', year:'numeric', timeZone:'UTC' });
+}
+function actionSummary(r){
+  const p = [];
+  if(r.block_days_before>0) p.push(r.block_days_before + 'n before');
+  if(r.block_days_after>0)  p.push(r.block_days_after + 'n after');
+  return p.join(' + ');
+}
+
+function renderRuleList(){
+  const wrap = document.getElementById('ruleList');
+  if(!S.rules.length){ wrap.innerHTML = '<div class="empty">No rule sets yet.</div>'; return; }
+  wrap.innerHTML = S.rules.map(r => `
+    <button class="rule-item" data-id="${r.id}" aria-current="${r.id===selectedRuleId}">
+      <span class="nm">${esc(r.name)}</span>
+      <span class="mt">
+        <span class="pill ${r.enabled?'on':''}">${r.enabled?'Enabled':'Off'}</span>
+        <span>${esc(triggerSummary(r))}</span>
+        <span>·</span>
+        <span>${r.applies_to_all_homes ? 'all homes' : ruleUnits(r.id).length + ' homes'}</span>
+      </span>
+    </button>`).join('');
+  wrap.querySelectorAll('.rule-item').forEach(b => b.onclick = () => {
+    selectedRuleId = b.dataset.id; draftUnits = null; previewCache = null; renderRuleList(); renderEditor();
+  });
+}
+
+document.getElementById('newRule').onclick = () => {
+  selectedRuleId = 'new'; draftUnits = new Set(); previewCache = null;
+  renderRuleList(); renderEditor();
+  document.getElementById('f_name')?.focus();
+};
+
+function blankRule(){
+  return { id:null, name:'', description:'', enabled:false, priority:100,
+    trigger_type:'checkout_dow', trigger_lead_days:2, trigger_dows:[0], trigger_max_nights:2,
+    block_days_before:0, block_days_after:1, block_type_id:6,
+    block_label:'Auto Buffer', horizon_days:400, min_nights:null, max_nights:null };
+}
+
+function renderEditor(){
+  const wrap = document.getElementById('editorWrap');
+  if(!selectedRuleId){ wrap.innerHTML = '<div class="card"><div class="empty">Pick a rule set, or create one.</div></div>'; return; }
+  const isNew = selectedRuleId === 'new';
+  const r = isNew ? blankRule() : S.rules.find(x => x.id === selectedRuleId);
+  if(!r){ wrap.innerHTML=''; return; }
+  if(!draftUnits) draftUnits = new Set(isNew ? [] : ruleUnits(r.id));
+  draftAll = !!r.applies_to_all_homes;
+  const dows = new Set(r.trigger_dows || []);
+
+  wrap.innerHTML = `
+    <div class="card">
+      <div class="card-h">
+        <h2>${isNew ? 'New rule set' : esc(r.name)}</h2>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          ${isNew ? '' : `<span class="lbl">Enabled</span>
+            <button class="switch" id="ruleSw" role="switch" aria-checked="${r.enabled}" aria-label="Enable rule"></button>`}
+        </div>
+      </div>
+      <div class="card-b grid">
+        <div class="grid" style="grid-template-columns:2fr 1fr">
+          <div class="field">
+            <label class="lbl" for="f_name">Name</label>
+            <input id="f_name" value="${esc(r.name)}" placeholder="Sunday checkout — no same-day turn">
+          </div>
+          <div class="field">
+            <label class="lbl" for="f_priority">Priority</label>
+            <input id="f_priority" type="number" value="${r.priority}">
+            <span class="hint">Lower wins a contested night.</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl" for="f_desc">What it's for</label>
+          <input id="f_desc" value="${esc(r.description ?? '')}" placeholder="Optional note for whoever reads this next">
+        </div>
+
+        <hr style="border:0;border-top:1px solid var(--line-soft);margin:2px 0">
+
+        <div class="field" style="max-width:320px">
+          <label class="lbl" for="f_trigger">Apply to bookings that…</label>
+          <select id="f_trigger">
+            <option value="turnover_soon" ${r.trigger_type==='turnover_soon'?'selected':''}>have a turnover coming up soon</option>
+            <option value="dow_turnover" ${r.trigger_type==='dow_turnover'?'selected':''}>check in OR out on certain days</option>
+            <option value="date_turnover" ${r.trigger_type==='date_turnover'?'selected':''}>check in OR out on specific dates (holidays)</option>
+            <option value="all" ${r.trigger_type==='all'?'selected':''}>&mdash; every booking &mdash;</option>
+            <option value="arrival_within" ${r.trigger_type==='arrival_within'?'selected':''}>arrive within the next few days</option>
+            <option value="last_minute_arrival" ${r.trigger_type==='last_minute_arrival'?'selected':''}>were booked close to check-in</option>
+            <option value="checkout_dow" ${r.trigger_type==='checkout_dow'?'selected':''}>check out on certain days</option>
+            <option value="checkin_dow"  ${r.trigger_type==='checkin_dow'?'selected':''}>check in on certain days</option>
+            <option value="short_stay"   ${r.trigger_type==='short_stay'?'selected':''}>are short stays</option>
+          </select>
+        </div>
+
+        <div id="trigParams"></div>
+
+        <hr style="border:0;border-top:1px solid var(--line-soft);margin:2px 0">
+
+        <div class="grid" style="grid-template-columns:1fr 1fr;max-width:420px">
+          <div class="field">
+            <label class="lbl" for="f_before">Nights held before check-in</label>
+            <input id="f_before" type="number" min="0" max="14" value="${r.block_days_before}">
+          </div>
+          <div class="field">
+            <label class="lbl" for="f_after">Nights held from checkout</label>
+            <input id="f_after" type="number" min="0" max="14" value="${r.block_days_after}">
+          </div>
+        </div>
+        <span class="hint">1 night from checkout stops a same-day turnover. Blocks never overwrite an
+          existing reservation — they stop at the first night already taken.</span>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" id="saveRule">${isNew ? 'Create rule set' : 'Save changes'}</button>
+          <button class="btn" id="previewBtn" ${isNew?'disabled':''}>Preview effect</button>
+          ${isNew ? '' : '<button class="btn danger" id="delRule" style="margin-left:auto">Delete</button>'}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <h2>Homes</h2>
+        <span class="pill" id="homeCount">${draftUnits.size} of ${S.properties.length}</span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn ghost" id="selAll">Select all</button>
+          <button class="btn ghost" id="selNone">Clear</button>
+        </div>
+      </div>
+      <div class="card-b">
+        <div style="display:flex;gap:11px;align-items:flex-start;padding-bottom:14px;margin-bottom:14px;
+                    border-bottom:1px solid var(--line-soft)">
+          <button class="switch" id="allHomesSw" role="switch" aria-checked="${draftAll}"
+                  aria-label="Apply to every home"></button>
+          <div>
+            <div style="font-weight:600;font-size:13px">Apply to every home</div>
+            <p class="hint">Follows your whole active portfolio, so homes you onboard later are
+               covered automatically. Turn this off to choose homes individually.</p>
+          </div>
+        </div>
+        <div id="homePicker"${draftAll ? ' style="opacity:.4;pointer-events:none"' : ''}>
+        <div class="homes-tools">
+          <input type="search" id="homeSearch" placeholder="Filter by name, city or area…">
+          <select id="bedFilter" style="background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:6px 8px;font-size:12.5px">
+            <option value="">Any size</option>
+          </select>
+        </div>
+        <div class="homes" id="homeList"></div>
+        </div>
+        <div style="margin-top:11px"><button class="btn" id="saveUnits">Save home selection</button></div>
+      </div>
+    </div>
+
+    <div id="previewWrap"></div>`;
+
+  renderTrigParams(r);
+  renderHomes();
+
+  document.getElementById('f_trigger').onchange = e => {
+    r.trigger_type = e.target.value; renderTrigParams(r);
+  };
+  document.getElementById('ruleSw')?.addEventListener('click', async ev => {
+    const on = ev.currentTarget.getAttribute('aria-checked') !== 'true';
+    try {
+      // Send the rule's own trigger settings back untouched. This toggle posts
+      // the whole rule, so anything omitted here gets wiped.
+      await api({action:'save_rule', rule:{ id:r.id, name:r.name, trigger_type:r.trigger_type,
+        trigger_dates:r.trigger_dates ?? null, trigger_dows:r.trigger_dows ?? null,
+        trigger_lead_days:r.trigger_lead_days ?? null, trigger_max_nights:r.trigger_max_nights ?? null,
+        block_days_before:r.block_days_before, block_days_after:r.block_days_after, enabled:on }});
+      toast(on ? 'Rule enabled' : 'Rule turned off');
+      await refresh();
+    } catch(e){ toast(e.message, true); }
+  });
+  document.getElementById('saveRule').onclick = () => saveRule(r, isNew);
+  document.getElementById('previewBtn')?.addEventListener('click', () => doPreview(r.id));
+  document.getElementById('delRule')?.addEventListener('click', async () => {
+    if(!confirm('Delete "' + r.name + '"? Blocks it already placed in Streamline stay there.')) return;
+    try { await api({action:'delete_rule', id:r.id}); selectedRuleId = null; await refresh(); toast('Rule deleted'); }
+    catch(e){ toast(e.message, true); }
+  });
+  document.getElementById('allHomesSw').onclick = (ev) => {
+    draftAll = ev.currentTarget.getAttribute('aria-checked') !== 'true';
+    ev.currentTarget.setAttribute('aria-checked', String(draftAll));
+    const pick = document.getElementById('homePicker');
+    pick.style.opacity = draftAll ? '.4' : '';
+    pick.style.pointerEvents = draftAll ? 'none' : '';
+  };
+  document.getElementById('selAll').onclick = () => { draftUnits = new Set(S.properties.map(p=>p.unit_id)); renderHomes(); };
+  document.getElementById('selNone').onclick = () => { draftUnits = new Set(); renderHomes(); };
+  document.getElementById('homeSearch').oninput = renderHomes;
+  document.getElementById('bedFilter').onchange = renderHomes;
+  document.getElementById('saveUnits').onclick = async () => {
+    if(isNew){ toast('Create the rule set first, then save homes.', true); return; }
+    try {
+      await api({action:'save_rule', rule:{ id:r.id, name:r.name, trigger_type:r.trigger_type,
+        trigger_dates:r.trigger_dates ?? null, trigger_dows:r.trigger_dows ?? null,
+        trigger_lead_days:r.trigger_lead_days ?? null, trigger_max_nights:r.trigger_max_nights ?? null,
+        block_days_before:r.block_days_before, block_days_after:r.block_days_after,
+        applies_to_all_homes:draftAll }});
+      await api({action:'set_units', rule_set_id:r.id, unit_ids:[...draftUnits]});
+      toast(draftAll ? 'Applying to every home' : draftUnits.size + ' homes saved');
+      await refresh();
+    } catch(e){ toast(e.message, true); }
+  };
+  if(previewCache) renderPreview(previewCache);
+}
+
+function renderTrigParams(r){
+  const el = document.getElementById('trigParams');
+  const dows = new Set(r.trigger_dows || []);
+  if(r.trigger_type === 'turnover_soon'){
+    el.innerHTML = `<div class="field" style="max-width:270px">
+      <label class="lbl" for="f_lead">Notice window (days)</label>
+      <input id="f_lead" type="number" min="1" max="14" value="${r.trigger_lead_days ?? 1}">
+      <span class="hint">While a check-in or checkout is this close, its adjoining night is held so
+        no new same-day turnover can be booked into it. Turnovers booked further ahead are left
+        alone &mdash; housekeeping has time to plan those. <strong>1 day</strong> guarantees at least
+        24 hours' notice.</span></div>`;
+  } else if(r.trigger_type === 'arrival_within'){
+    el.innerHTML = `<div class="field" style="max-width:250px">
+      <label class="lbl" for="f_lead">Arriving within this many days from today</label>
+      <input id="f_lead" type="number" min="1" max="30" value="${r.trigger_lead_days ?? 2}">
+      <span class="hint">Whenever a stay is this close, the nights leading up to it get held —
+        however far in advance it was booked. 2 days = a 48-hour window.</span></div>`;
+  } else if(r.trigger_type === 'last_minute_arrival'){
+    el.innerHTML = `<div class="field" style="max-width:250px">
+      <label class="lbl" for="f_lead">Booked this many days (or fewer) before check-in</label>
+      <input id="f_lead" type="number" min="0" max="30" value="${r.trigger_lead_days ?? 2}">
+      <span class="hint">Keys off booking lead time, not how soon the stay is.</span></div>`;
+  } else if(r.trigger_type === 'short_stay'){
+    el.innerHTML = `<div class="field" style="max-width:250px">
+      <label class="lbl" for="f_maxn">Stays of this many nights or fewer</label>
+      <input id="f_maxn" type="number" min="1" max="30" value="${r.trigger_max_nights ?? 2}"></div>`;
+  } else if(r.trigger_type === 'dow_turnover'){
+    el.innerHTML = `<div class="field">
+      <span class="lbl">Days with no turnovers</span>
+      <div class="dows">${DOW1.map((L,i)=>
+        `<label title="${DOW[i]}"><input type="checkbox" class="dowbox" value="${i}" ${dows.has(i)?'checked':''}><span>${L}</span></label>`
+      ).join('')}</div>
+      <span class="hint">Checks out on one of these days &rarr; that night is held, so nobody checks in.
+        Checks in on one of these days &rarr; the night before is held, so nobody checks out.
+        Both sides, so no turnover can happen on the day at all.</span></div>`;
+  } else if(r.trigger_type === 'checkin_dow' || r.trigger_type === 'checkout_dow'){
+    el.innerHTML = `<div class="field">
+      <span class="lbl">${r.trigger_type==='checkin_dow'?'Check-in':'Checkout'} days</span>
+      <div class="dows">${DOW1.map((L,i)=>
+        `<label title="${DOW[i]}"><input type="checkbox" class="dowbox" value="${i}" ${dows.has(i)?'checked':''}><span>${L}</span></label>`
+      ).join('')}</div></div>`;
+  } else if(r.trigger_type === 'date_turnover'){
+    const all = [...(r.trigger_dates || [])].sort();
+    const upcoming = upcomingDates(all);
+    const past = all.length - upcoming.length;
+    el.innerHTML = `<div class="field">
+      <span class="lbl">Dates with no turnovers</span>
+      <div id="dateList" class="dates">${
+        upcoming.length
+          ? upcoming.map(d => `<span class="datechip" data-d="${esc(d)}">${prettyDate(d)}<button type="button"
+               class="datex" data-d="${esc(d)}" title="Remove ${prettyDate(d)}">&times;</button></span>`).join('')
+          : '<span class="hint">No upcoming dates. Add one below.</span>'
+      }</div>
+      <div class="daterow">
+        <input id="f_newdate" type="date">
+        <button type="button" class="btn ghost" id="addDate">Add date</button>
+      </div>
+      <span class="hint">Checks out on one of these dates &rarr; that night is held, so nobody checks in.
+        Checks in on one of these dates &rarr; the night before is held, so nobody checks out.
+        Holidays move around the calendar, so every year is listed out explicitly &mdash;
+        add the next year's dates before you run out.${
+          past ? ' <strong>' + past + '</strong> past date' + (past>1?'s are':' is') + ' kept on file and ignored.' : ''
+        }</span></div>`;
+    // Hold the working copy on the rule object so it survives a re-render.
+    r.trigger_dates = all;
+    const redraw = () => renderTrigParams(r);
+    el.querySelectorAll('.datex').forEach(b => b.onclick = () => {
+      r.trigger_dates = r.trigger_dates.filter(d => d !== b.dataset.d); redraw();
+    });
+    el.querySelector('#addDate').onclick = () => {
+      const v = el.querySelector('#f_newdate').value;
+      if(!v) return;
+      if(!r.trigger_dates.includes(v)) r.trigger_dates = [...r.trigger_dates, v].sort();
+      redraw();
+    };
+  } else if(r.trigger_type === 'all'){
+    el.innerHTML = '<span class="hint">Every booking on the selected homes gets the buffer.</span>';
+  } else {
+    // A trigger this page does not know about. Say so loudly rather than
+    // letting the dropdown quietly fall back to its first option and
+    // overwrite the rule on the next save.
+    el.innerHTML = `<div class="note warn">This rule uses a trigger this page does not recognise
+      (<code>${esc(r.trigger_type || '—')}</code>). Saving from here would change it into something else,
+      so saving is blocked. Update the admin page before editing this rule.</div>`;
+  }
+}
+
+function renderHomes(){
+  const q = (document.getElementById('homeSearch')?.value || '').toLowerCase().trim();
+  const bed = document.getElementById('bedFilter')?.value || '';
+  const bf = document.getElementById('bedFilter');
+  if(bf && bf.options.length === 1){
+    [...new Set(S.properties.map(p=>p.bedrooms).filter(b=>b!=null))].sort((a,b)=>a-b)
+      .forEach(b => bf.add(new Option(b + ' bed', String(b))));
+    bf.value = bed;
+  }
+  const list = S.properties.filter(p => {
+    if(bed && String(p.bedrooms) !== bed) return false;
+    if(!q) return true;
+    return [p.name, p.city, p.neighborhood_name].filter(Boolean).join(' ').toLowerCase().includes(q);
+  });
+  document.getElementById('homeCount').textContent = draftUnits.size + ' of ' + S.properties.length;
+  const el = document.getElementById('homeList');
+  el.innerHTML = list.length ? list.map(p => `
+    <label class="home">
+      <input type="checkbox" value="${esc(p.unit_id)}" ${draftUnits.has(p.unit_id)?'checked':''}>
+      <span class="hn" title="${esc(p.name)}">${esc(p.name)}</span>
+      <span class="hb">${p.bedrooms ?? '—'}br</span>
+    </label>`).join('') : '<div class="empty" style="grid-column:1/-1">No homes match that filter.</div>';
+  el.querySelectorAll('input').forEach(cb => cb.onchange = () => {
+    cb.checked ? draftUnits.add(cb.value) : draftUnits.delete(cb.value);
+    document.getElementById('homeCount').textContent = draftUnits.size + ' of ' + S.properties.length;
+  });
+}
+
+// Every trigger this page can actually edit. If a rule's trigger is not in
+// here, the <select> has no matching <option>, the browser silently shows the
+// first one instead, and saving would rewrite the rule into that. That is
+// exactly how the holiday rule became a "buffer every checkout" rule on
+// 29 Sep 2026 and put 44 blocks on ordinary weeknights. Never save a trigger
+// this page cannot represent.
+const KNOWN_TRIGGERS = ['turnover_soon','dow_turnover','date_turnover','all',
+  'arrival_within','last_minute_arrival','checkout_dow','checkin_dow','short_stay'];
+
+function readForm(r, isNew){
+  const g = id => document.getElementById(id);
+  const num = (id, dflt) => { const v = g(id)?.value; return v === '' || v == null ? dflt : Number(v); };
+  const rule = {
+    name: g('f_name').value.trim(),
+    description: g('f_desc').value.trim() || null,
+    priority: num('f_priority', 100),
+    trigger_type: g('f_trigger').value,
+    block_days_before: num('f_before', 0),
+    block_days_after: num('f_after', 0),
+    enabled: isNew ? false : r.enabled,
+    applies_to_all_homes: draftAll,
+    // Carry the rule's own block type through. Hardcoding it here used to
+    // reset every saved rule to 6 (Office Block); blocks go in as 30
+    // (MaintenanceBlock) now, because Office Blocks trigger cleans.
+    block_type_id: r.block_type_id ?? 30,
+  };
+  if(!isNew) rule.id = r.id;
+  if(['turnover_soon','arrival_within','last_minute_arrival'].includes(rule.trigger_type)) {
+    rule.trigger_lead_days = num('f_lead', 2);
+  }
+  if(rule.trigger_type === 'short_stay') rule.trigger_max_nights = num('f_maxn', 2);
+  if(rule.trigger_type === 'dow_turnover' || rule.trigger_type === 'checkin_dow' || rule.trigger_type === 'checkout_dow'){
+    rule.trigger_dows = [...document.querySelectorAll('.dowbox:checked')].map(c => Number(c.value));
+  }
+  if(rule.trigger_type === 'date_turnover') rule.trigger_dates = r.trigger_dates || [];
+  return rule;
+}
+
+async function saveRule(r, isNew){
+  if(!isNew && !KNOWN_TRIGGERS.includes(r.trigger_type)){
+    toast('This rule uses a trigger this page does not support (' + r.trigger_type +
+          '). Saving would change it. Update the admin page first.', true);
+    return;
+  }
+  const rule = readForm(r, isNew);
+  if(!rule.name){ toast('Give the rule set a name.', true); return; }
+  if(['dow_turnover','checkin_dow','checkout_dow'].includes(rule.trigger_type)
+     && !rule.trigger_dows.length){ toast('Pick at least one day of the week.', true); return; }
+  if(rule.trigger_type === 'date_turnover' && !upcomingDates(rule.trigger_dates).length){
+    toast('Add at least one upcoming date.', true); return; }
+  if(rule.block_days_before + rule.block_days_after <= 0){
+    toast('Hold at least one night, before check-in or from checkout.', true); return; }
+  try {
+    const res = await api({action:'save_rule', rule});
+    const newId = res.rule.id;
+    if(isNew && draftUnits.size){
+      await api({action:'set_units', rule_set_id:newId, unit_ids:[...draftUnits]});
+    }
+    selectedRuleId = newId;
+    await refresh();
+    toast(isNew ? 'Rule set created' : 'Saved');
+  } catch(e){ toast(e.message, true); }
+}
+
+/* ---------------- preview ---------------- */
+async function doPreview(id){
+  const btn = document.getElementById('previewBtn');
+  btn.disabled = true; btn.textContent = 'Working…';
+  try {
+    const { blocks } = await api({action:'preview', rule_set_ids:[id]});
+    previewCache = blocks.filter(b => b.rule_set_id === id);
+    renderPreview(previewCache);
+  } catch(e){ toast(e.message, true); }
+  finally { btn.disabled = false; btn.textContent = 'Preview effect'; }
+}
+
+function stripFor(b){
+  // Draw the source stay and the held nights next to it, in calendar order.
+  const stay = Math.max(1, Math.min(nights(b.source_arriving, b.source_departing), 10));
+  const held = Math.max(1, Math.min(nights(b.block_start, b.block_end), 10));
+  const cells = (n, cls) => Array(n).fill('<span class="night ' + cls + '"></span>').join('');
+  return '<span class="strip" aria-hidden="true">' +
+    (b.side === 'before'
+      ? cells(held,'held') + cells(stay,'booked')
+      : cells(stay,'booked') + cells(held,'held')) +
+    '</span>';
+}
+
+function lastNight(blockEnd){ // block_end is a checkout date; last held night is the day before
+  const t = d(blockEnd); t.setDate(t.getDate() - 1);
+  return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+}
+
+function renderPreview(blocks){
+  const wrap = document.getElementById('previewWrap');
+  if(!blocks.length){
+    wrap.innerHTML = `<div class="card"><div class="card-h"><h2>Preview</h2></div>
+      <div class="empty">This rule wouldn't hold any nights right now.<br>
+      <span style="font-size:12px">Either no bookings match it, or every night it wants is already taken.</span></div></div>`;
+    return;
+  }
+  const totalNights = blocks.reduce((s,b)=>s+nights(b.block_start,b.block_end),0);
+  const homes = new Set(blocks.map(b=>b.unit_id)).size;
+  const shown = blocks.slice(0, 150);
+  wrap.innerHTML = `
+    <div class="card">
+      <div class="card-h">
+        <h2>Preview</h2>
+        <span class="pill on">${blocks.length} blocks · ${totalNights} nights · ${homes} homes</span>
+        <span class="lbl" style="margin-left:auto">
+          <span class="night booked" style="display:inline-block;vertical-align:-4px;width:11px;height:14px"></span> booked
+          &nbsp;<span class="night held" style="display:inline-block;vertical-align:-4px;width:11px;height:14px"></span> held
+        </span>
+      </div>
+      <div>${shown.map(b => `
+        <div class="prev-row">
+          <span class="hn" title="${esc(b.unit_name)}">${esc(b.unit_name)}</span>
+          ${stripFor(b)}
+          <span class="dt">${fmt(b.block_start)}${nights(b.block_start,b.block_end)>1 ? ' – ' + fmt(lastNight(b.block_end)) : ''}
+            <span style="color:var(--ink-3)">· ${nights(b.block_start,b.block_end)}n</span></span>
+          <span class="rn">${b.side === 'before' ? 'before' : 'after'} #${esc(b.source_confirmation_id)}</span>
+        </div>`).join('')}
+      </div>
+      ${blocks.length > shown.length ? `<div class="empty" style="padding:12px">…and ${blocks.length - shown.length} more</div>` : ''}
+    </div>`;
+}
+
+/* ---------------- queue ---------------- */
+const QLABEL = { pending:'Queued', pushed:'In Streamline', stale:'Needs manual removal',
+                 failed:'Failed', removed:'Removed', skipped:'Skipped' };
+
+function renderQueue(){
+  const q = S.queue;
+  const by = s => q.filter(x => x.status === s).length;
+  document.getElementById('queueStats').innerHTML = `
+    <div class="stat good"><div class="v">${by('pushed')}</div><div class="k lbl">In Streamline</div></div>
+    <div class="stat"><div class="v">${by('pending')}</div><div class="k lbl">Queued</div></div>
+    <div class="stat warn"><div class="v">${by('stale')}</div><div class="k lbl">Needs removal</div></div>
+    <div class="stat crit"><div class="v">${by('failed')}</div><div class="k lbl">Failed</div></div>`;
+
+  document.getElementById('staleNote').innerHTML = by('stale')
+    ? `<div class="note">${by('stale')} block${by('stale')>1?'s are':' is'} no longer needed because the
+       booking behind ${by('stale')>1?'them':'it'} changed. Delete ${by('stale')>1?'them':'it'} in Streamline
+       using the confirmation number below, then mark ${by('stale')>1?'them':'it'} removed here.</div>` : '';
+
+  const filter = document.getElementById('qFilter').value;
+  const rows = (filter ? q.filter(x => x.status === filter) : q);
+  const el = document.getElementById('queueTable');
+  if(!rows.length){
+    el.innerHTML = '<div class="empty">Nothing here yet. Enable a rule and the engine will queue blocks on its next run.</div>';
+    return;
+  }
+  el.innerHTML = `<table><thead><tr>
+      <th>Home</th><th>Nights held</th><th class="num">N</th><th>Status</th>
+      <th>Streamline #</th><th>Rule</th><th>From booking</th><th></th>
+    </tr></thead><tbody>` +
+    rows.slice(0,400).map(r => `<tr class="${r.status==='stale'?'is-stale':r.status==='failed'?'is-failed':''}">
+      <td>${esc(r.unit_name ?? r.unit_id)}</td>
+      <td class="mono">${fmtFull(r.block_start)} → ${fmtFull(r.block_end)}</td>
+      <td class="num">${r.nights}</td>
+      <td><span class="pill ${r.status==='pushed'?'on':r.status==='stale'?'warn':r.status==='failed'?'crit':''}">${QLABEL[r.status] ?? r.status}</span></td>
+      <td class="mono">${r.streamline_confirmation_id ? '#'+esc(r.streamline_confirmation_id) : '—'}</td>
+      <td>${esc(r.rule_name)}</td>
+      <td class="mono">#${esc(r.source_confirmation_id)}</td>
+      <td>${r.status==='stale' ? `<button class="btn ghost mark" data-id="${r.id}">Mark removed</button>` : ''}</td>
+    </tr>` + (r.last_error ? `<tr class="is-failed"><td colspan="8" style="color:var(--crit);font-size:11.5px;white-space:normal;padding-top:0">${esc(r.last_error)}</td></tr>` : '')).join('') +
+    '</tbody></table>';
+
+  el.querySelectorAll('.mark').forEach(b => b.onclick = async () => {
+    try { await api({action:'mark_removed', id:b.dataset.id}); await refresh(); toast('Marked removed'); }
+    catch(e){ toast(e.message, true); }
+  });
+}
+document.getElementById('qFilter').onchange = renderQueue;
+
+
+/* ---------------- history ---------------- */
+const EV = {
+  queued:  { label:'Queued',   cls:'' },
+  pushed:  { label:'Blocked',  cls:'on' },
+  failed:  { label:'Failed',   cls:'crit' },
+  stale:   { label:'Needs removal', cls:'warn' },
+  removed: { label:'Removed',  cls:'' },
+  expired: { label:'Expired',  cls:'' },
+};
+
+function dayLabel(iso){
+  const d0 = new Date(iso);
+  const today = new Date();
+  const y = new Date(today); y.setDate(y.getDate() - 1);
+  const same = (a,b) => a.toDateString() === b.toDateString();
+  if(same(d0, today)) return 'Today';
+  if(same(d0, y)) return 'Yesterday';
+  return d0.toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric'});
+}
+
+function renderHistory(){
+  const all = S.history ?? [];
+  const n = ev => all.filter(h => h.event === ev).length;
+  document.getElementById('histStats').innerHTML = `
+    <div class="stat good"><div class="v">${n('pushed')}</div><div class="k lbl">Blocks created</div></div>
+    <div class="stat warn"><div class="v">${n('stale')}</div><div class="k lbl">Flagged for removal</div></div>
+    <div class="stat crit"><div class="v">${n('failed')}</div><div class="k lbl">Failures</div></div>
+    <div class="stat"><div class="v">${all.length}</div><div class="k lbl">Total events</div></div>`;
+
+  const f = document.getElementById('hFilter').value;
+  const q = (document.getElementById('hSearch').value || '').toLowerCase().trim();
+  let rows = all;
+  if(f) rows = rows.filter(h => h.event === f);
+  if(q) rows = rows.filter(h => (h.unit_name ?? h.unit_id ?? '').toLowerCase().includes(q));
+
+  const el = document.getElementById('histFeed');
+  if(!rows.length){
+    el.innerHTML = all.length
+      ? '<div class="empty">No events match that filter.</div>'
+      : `<div class="empty">Nothing yet.<br><span style="font-size:12px">Every block created, flagged or removed will appear here, newest first.</span></div>`;
+    return;
+  }
+
+  let out = '', lastDay = null;
+  for(const h of rows.slice(0, 400)){
+    const day = dayLabel(h.at);
+    if(day !== lastDay){
+      out += `<div style="padding:9px 16px;background:var(--surface-2);border-bottom:1px solid var(--line-soft);
+                          border-top:1px solid var(--line-soft)"><span class="lbl">${esc(day)}</span></div>`;
+      lastDay = day;
+    }
+    const e = EV[h.event] ?? { label:h.event, cls:'' };
+    const time = new Date(h.at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+    const conf = h.streamline_confirmation_id ? ` &middot; Streamline #${esc(h.streamline_confirmation_id)}` : '';
+    out += `<div class="prev-row" style="grid-template-columns:64px 128px minmax(0,1fr) auto">
+      <span class="dt" style="color:var(--ink-3)">${time}</span>
+      <span><span class="pill ${e.cls}">${e.label}</span></span>
+      <span style="min-width:0">
+        <span class="hn" style="display:block">${esc(h.unit_name ?? h.unit_id)}</span>
+        <span class="dt" style="color:var(--ink-3)">${fmtFull(h.block_start)} \u2192 ${fmtFull(h.block_end)} &middot; ${h.nights}n${conf}</span>
+      </span>
+      <span class="rn">${esc(h.rule_name)}</span>
+    </div>`;
+    if(h.event === 'failed' && h.detail){
+      out += `<div style="padding:0 16px 10px 208px;color:var(--crit);font-size:11.5px">${esc(h.detail)}</div>`;
+    }
+  }
+  if(rows.length > 400) out += `<div class="empty" style="padding:12px">\u2026and ${rows.length - 400} older events</div>`;
+  el.innerHTML = out;
+}
+document.getElementById('hFilter').onchange = renderHistory;
+document.getElementById('hSearch').oninput = renderHistory;
+
+/* ---------------- runs ---------------- */
+function renderRuns(){
+  const el = document.getElementById('runsTable');
+  if(!S.runs.length){ el.innerHTML = '<div class="empty">The engine hasn\'t run yet.</div>'; return; }
+  el.innerHTML = `<table><thead><tr>
+      <th>Started</th><th>Mode</th><th class="num">Wanted</th><th class="num">Queued</th>
+      <th class="num">Pushed</th><th class="num">Failed</th><th class="num">Stale</th><th>Note</th>
+    </tr></thead><tbody>` + S.runs.map(r => `<tr>
+      <td class="mono">${new Date(r.started_at).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</td>
+      <td><span class="pill ${r.mode==='live'?'on':''}">${r.mode==='live'?'Live':'Dry run'}</span></td>
+      <td class="num">${r.desired_count ?? '—'}</td>
+      <td class="num">${r.created_count ?? '—'}</td>
+      <td class="num">${r.pushed_count ?? '—'}</td>
+      <td class="num" style="${r.failed_count?'color:var(--crit);font-weight:600':''}">${r.failed_count ?? '—'}</td>
+      <td class="num" style="${r.stale_count?'color:var(--warn);font-weight:600':''}">${r.stale_count ?? '—'}</td>
+      <td style="color:var(--ink-3)">${esc(r.notes ?? '')}</td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+/* ---------------- settings ---------------- */
+function renderSettings(){
+  const c = S.config; if(!c) return;
+  const sw = document.getElementById('liveSw');
+  sw.setAttribute('aria-checked', String(!!c.live));
+  document.getElementById('liveHint').textContent = c.live
+    ? 'The engine is creating Office Blocks in Streamline on every run.'
+    : 'The engine reconciles and logs what it would do, but sends nothing to Streamline.';
+  document.getElementById('throttle').value = c.max_pushes_per_run;
+  document.getElementById('gfn').value = c.guest_first_name;
+  document.getElementById('gln').value = c.guest_last_name;
+}
+document.getElementById('liveSw').onclick = e => {
+  const on = e.currentTarget.getAttribute('aria-checked') !== 'true';
+  if(on && !confirm('Turn on pushing? From the next run, this creates real Office Blocks in Streamline.')) return;
+  e.currentTarget.setAttribute('aria-checked', String(on));
+  document.getElementById('liveHint').textContent = on
+    ? 'The engine is creating Office Blocks in Streamline on every run.'
+    : 'The engine reconciles and logs what it would do, but sends nothing to Streamline.';
+};
+document.getElementById('saveCfg').onclick = async () => {
+  try {
+    await api({action:'save_config', config:{
+      live: document.getElementById('liveSw').getAttribute('aria-checked') === 'true',
+      max_pushes_per_run: Number(document.getElementById('throttle').value),
+      guest_first_name: document.getElementById('gfn').value.trim() || 'Auto',
+      guest_last_name: document.getElementById('gln').value.trim() || 'Buffer',
+    }});
+    await refresh();
+    toast('Settings saved');
+  } catch(e){ toast(e.message, true); }
+};
+
+/* ---------------- boot ---------------- */
+if(TOKEN){
+  unlock(TOKEN).catch(() => {
+    try { localStorage.removeItem('tg_token'); } catch(e) {}
+    document.getElementById('gate').hidden = false;
+  });
+}
+</script>
+
+</body>
+</html>
